@@ -2,7 +2,13 @@ import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader"
 import { SubscribeButton } from "@/components/billing/SubscribeButton";
 import { BillingActivation } from "@/components/billing/BillingActivation";
 import { requireSession } from "@/lib/auth/guards";
-import { hasActiveSubscription, subscriptionLabel } from "@/lib/subscription";
+import { FREE_TRIAL_DAYS, paidPlans } from "@/lib/pricing";
+import { countQuotesThisMonth } from "@/lib/quotes-store";
+import {
+  hasActiveSubscription,
+  monthlyQuoteLimit,
+  subscriptionLabel,
+} from "@/lib/subscription";
 import { ui } from "@/lib/ui";
 import { uk } from "@/lib/uk-copy";
 
@@ -17,6 +23,13 @@ export default async function BillingPage({
   const { paypal, reason } = await searchParams;
   const active = hasActiveSubscription(user);
   const label = subscriptionLabel(user);
+  const quoteLimit = monthlyQuoteLimit(user);
+  const quotesUsed = active ? await countQuotesThisMonth(user.id) : 0;
+  const usageText = !active
+    ? null
+    : Number.isFinite(quoteLimit)
+      ? `${quotesUsed} of ${quoteLimit} quotes used this month`
+      : "Unlimited quotes";
   const paypalManageUrl =
     process.env.PAYPAL_MODE === "live"
       ? "https://www.paypal.com/myaccount/autopay/"
@@ -73,35 +86,27 @@ export default async function BillingPage({
             ? "Your company can create and send client quotes."
             : "Subscribe to continue after your trial."}
         </p>
+        {usageText ? (
+          <p className="mt-3 inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600">
+            {usageText}
+          </p>
+        ) : null}
+      </div>
+
+      <div className={`${ui.cardMuted} mt-6 p-6`}>
+        <p className="text-xs font-medium uppercase tracking-wider text-neutral-400">
+          Plan clarity
+        </p>
+        <p className="mt-2 text-sm text-neutral-700">
+          Free Trial gives full access for {FREE_TRIAL_DAYS} days to prove value.
+          Professional is for owner-operators (up to 50 quotes/month). Business is
+          for growing teams that need unlimited quoting and extra support.
+        </p>
       </div>
 
       {user.subscriptionStatus !== "active" ? (
         <div className="mt-10 grid gap-6 md:grid-cols-2">
-          {[
-            {
-              plan: "professional" as const,
-              name: "Professional",
-              price: "£79",
-              features: [
-                "Unlimited quotes",
-                "Client approval links",
-                "Dashboard & tracking",
-                "14-day free trial included",
-              ],
-            },
-            {
-              plan: "business" as const,
-              name: "Business",
-              price: "£149",
-              highlighted: true,
-              features: [
-                "Everything in Professional",
-                "Priority support",
-                "Team features (soon)",
-                "Best for busy crews",
-              ],
-            },
-          ].map((item) => (
+          {paidPlans.map((item) => (
             <div
               key={item.plan}
               className={`${ui.cardFlat} p-8 ${item.highlighted ? "ring-1 ring-amber-500" : ""}`}
@@ -112,6 +117,7 @@ export default async function BillingPage({
                 </span>
               ) : null}
               <h3 className="mt-2 text-xl font-semibold">{item.name}</h3>
+              <p className="mt-1 text-sm text-neutral-500">{item.bestFor}</p>
               <p className="mt-4 text-4xl font-semibold tabular-nums">
                 {item.price}
                 <span className="text-base font-normal text-neutral-400">/month</span>

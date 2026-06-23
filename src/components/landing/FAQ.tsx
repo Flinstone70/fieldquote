@@ -17,6 +17,10 @@ const items = [
     a: "You can create and send quotes immediately. Connect Stripe when you're ready to collect real card payments — setup takes a few minutes.",
   },
   {
+    q: "What is the difference between Free Trial, Professional, and Business?",
+    a: "Free Trial gives full access for 14 days so you can test the full workflow. Professional is for owner-operators and includes up to 50 quotes/month. Business is for teams and includes unlimited quotes, no FieldQuote branding on client pages, and priority support.",
+  },
+  {
     q: "Will this look professional to my clients?",
     a: "Yes. Client quote pages are designed to feel like a premium proposal — clean layout, clear pricing, and a simple accept-and-pay flow that builds trust.",
   },

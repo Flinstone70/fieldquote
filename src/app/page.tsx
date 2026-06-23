@@ -8,6 +8,7 @@ import { HeroPreview } from "@/components/landing/HeroPreview";
 import { ROICalculator } from "@/components/landing/ROICalculator";
 import { TrustGrid, TrustMarquee } from "@/components/landing/TrustMarquee";
 import { AnimatedSection } from "@/components/ui/AnimatedSection";
+import { FREE_TRIAL_DAYS, paidPlans } from "@/lib/pricing";
 import { ui } from "@/lib/ui";
 
 const stats = [
@@ -56,34 +57,6 @@ const testimonials = [
   },
 ];
 
-const plans = [
-  {
-    name: "Professional",
-    price: "£79",
-    description: "For established sole traders ready to look the part.",
-    features: [
-      "Unlimited quotes",
-      "Branded client pages",
-      "Stripe deposit collection",
-      "Dashboard & status tracking",
-      "Email-ready share links",
-    ],
-  },
-  {
-    name: "Business",
-    price: "£149",
-    description: "For teams booking high-value jobs every week.",
-    features: [
-      "Everything in Professional",
-      "Multiple team members",
-      "Quote templates",
-      "Priority support",
-      "Advanced reporting (soon)",
-    ],
-    highlighted: true,
-  },
-];
-
 export default function HomePage() {
   return (
     <>
@@ -108,7 +81,7 @@ export default function HomePage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/sign-up" className={ui.btnPrimary}>
-                  Create company account
+                  Start free 14-day trial
                 </Link>
                 <Link href="/demo" className={ui.btnSecondary}>
                   View live demo
@@ -269,11 +242,25 @@ export default function HomePage() {
               <p className="mt-4 text-neutral-400 leading-relaxed">
                 One secured deposit pays for your subscription many times over.
               </p>
+              <div className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/40 px-5 py-4 text-left text-sm text-neutral-300">
+                <p>
+                  <span className="font-medium text-white">Free Trial:</span> full
+                  access for {FREE_TRIAL_DAYS} days.
+                </p>
+                <p className="mt-1">
+                  <span className="font-medium text-white">Professional:</span>{" "}
+                  ideal for owner-operators (up to 50 quotes/month).
+                </p>
+                <p className="mt-1">
+                  <span className="font-medium text-white">Business:</span> built
+                  for growing teams (unlimited quotes + priority support).
+                </p>
+              </div>
             </AnimatedSection>
             <div className="mt-14 grid gap-6 md:grid-cols-2">
-              {plans.map((plan) => (
+              {paidPlans.map((plan) => (
                 <div
-                  key={plan.name}
+                  key={plan.plan}
                   className={`rounded-2xl border p-8 transition ${
                     plan.highlighted
                       ? "border-white bg-white text-neutral-950 shadow-2xl shadow-black/20"
@@ -286,8 +273,13 @@ export default function HomePage() {
                     </span>
                   ) : null}
                   <h3 className="mt-4 text-xl font-semibold">{plan.name}</h3>
+                  <p className={`mt-2 text-sm ${plan.highlighted ? "text-neutral-600" : "text-neutral-300"}`}>
+                    {plan.bestFor}
+                  </p>
                   <p className={`mt-2 text-sm ${plan.highlighted ? "text-neutral-500" : "text-neutral-400"}`}>
-                    {plan.description}
+                    {plan.plan === "professional"
+                      ? "For established solo businesses that want a premium quote flow."
+                      : "For teams that need higher volume and faster support."}
                   </p>
                   <p className="mt-8 text-5xl font-semibold tracking-tight tabular-nums">
                     {plan.price}
@@ -313,10 +305,38 @@ export default function HomePage() {
                         : "bg-white text-neutral-950 hover:bg-neutral-100"
                     }`}
                   >
-                    Get started
+                    Start free trial
                   </Link>
                 </div>
               ))}
+            </div>
+            <div className="mx-auto mt-10 max-w-5xl">
+              <h3 className="text-center text-lg font-semibold tracking-tight text-white">
+                Which plan fits your company?
+              </h3>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <article className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5">
+                  <p className="text-sm font-medium text-white">Free Trial</p>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                    Use all features for 14 days. No card needed.
+                  </p>
+                </article>
+                <article className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5">
+                  <p className="text-sm font-medium text-white">Professional</p>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                    Best if you send up to ~50 quotes/month and run lean.
+                  </p>
+                </article>
+                <article className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-5">
+                  <p className="text-sm font-medium text-white">Business</p>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                    Best if you have multiple jobs/crews and need unlimited quoting.
+                  </p>
+                </article>
+              </div>
+              <p className="mt-4 text-center text-sm text-neutral-400">
+                You can switch plans later from Billing.
+              </p>
             </div>
           </div>
         </section>

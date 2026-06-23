@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/auth/users";
 import { userToSession } from "@/lib/db/mappers";
+import { paidPlans } from "@/lib/pricing";
 import { hasActiveSubscription, subscriptionLabel } from "@/lib/subscription";
 
 export async function GET() {
@@ -20,8 +21,14 @@ export async function GET() {
     label: subscriptionLabel(user),
     canCreateQuotes: hasActiveSubscription(user),
     plans: {
-      professional: { price: "£79", name: "Professional" },
-      business: { price: "£149", name: "Business" },
+      professional: {
+        price: paidPlans.find((p) => p.plan === "professional")?.price ?? "£79",
+        name: "Professional",
+      },
+      business: {
+        price: paidPlans.find((p) => p.plan === "business")?.price ?? "£149",
+        name: "Business",
+      },
     },
   });
 }

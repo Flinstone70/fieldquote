@@ -17,6 +17,10 @@ export default async function BillingPage({
   const { paypal, reason } = await searchParams;
   const active = hasActiveSubscription(user);
   const label = subscriptionLabel(user);
+  const paypalManageUrl =
+    process.env.PAYPAL_MODE === "live"
+      ? "https://www.paypal.com/myaccount/autopay/"
+      : "https://www.sandbox.paypal.com/myaccount/autopay/";
 
   return (
     <>
@@ -152,7 +156,7 @@ export default async function BillingPage({
             active until the end of the paid period.
           </p>
           <a
-            href="https://www.paypal.com/myaccount/autopay/"
+            href={paypalManageUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={`${ui.btnSecondary} mt-5 inline-flex`}

@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 import { uk } from "@/lib/uk-copy";
 
 type EmailPayload = {
@@ -7,6 +7,8 @@ type EmailPayload = {
   text: string;
   html: string;
 };
+
+let smtpTransport: Transporter | null = null;
 
 function hasSmtpConfig(): boolean {
   return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
@@ -26,19 +28,34 @@ export function devOtpCode(code: string): string | undefined {
   return code;
 }
 
-async function sendViaSmtp(payload: EmailPayload): Promise<void> {
+function getSmtpTransport(): Transporter {
+  if (smtpTransport) return smtpTransport;
+
   const user = process.env.SMTP_USER!;
   const pass = process.env.SMTP_PASS!;
   const host = process.env.SMTP_HOST ?? "smtp.gmail.com";
   const port = Number(process.env.SMTP_PORT ?? "587");
-  const from = process.env.EMAIL_FROM ?? `${uk.brand} <${user}>`;
 
-  const transport = nodemailer.createTransport({
+  smtpTransport = nodemailer.createTransport({
     host,
     port,
     secure: port === 465,
     auth: { user, pass },
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 100,
+    connectionTimeout: 8_000,
+    greetingTimeout: 8_000,
+    socketTimeout: 12_000,
   });
+
+  return smtpTransport;
+}
+
+async function sendViaSmtp(payload: EmailPayload): Promise<void> {
+  const user = process.env.SMTP_USER!;
+  const from = process.env.EMAIL_FROM ?? `${uk.brand} <${user}>`;
+  const transport = getSmtpTransport();
 
   await transport.sendMail({
     from,
@@ -104,6 +121,55 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
   );
 }
 
+export type QuoteEmailInput = {
+  to: string;
+  clientName: string;
+  businessName: string;
+  jobTitle: string;
+  quoteRef: string;
+  depositLabel: string;
+  quoteUrl: string;
+};
+
+export function buildQuoteEmailPayload(input: QuoteEmailInput): EmailPayload {
+  const subject = `Quote from ${input.businessName} — ${input.jobTitle}`;
+  const text = `Hi ${input.clientName},
+
+${input.businessName} has sent you a quote for ${input.jobTitle}.
+
+Reference: ${input.quoteRef}
+Deposit to secure booking: ${input.depositLabel}
+
+Open your quote:
+${input.quoteUrl}
+
+${uk.brand}`;
+
+  const html = `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:24px;font-family:system-ui,sans-serif;background:#fafafa;color:#0a0a0a">
+  <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #e5e5e5;border-radius:16px;padding:28px">
+    <p style="margin:0 0 8px;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#737373">${uk.brand}</p>
+    <h1 style="margin:0 0 12px;font-size:22px;font-weight:600">Quote from ${input.businessName}</h1>
+    <p style="margin:0 0 16px;color:#525252;line-height:1.6">Hi ${input.clientName}, you have a quote for <strong>${input.jobTitle}</strong>.</p>
+    <p style="margin:0 0 20px;padding:14px 16px;background:#fafafa;border-radius:12px;font-size:14px;line-height:1.6">
+      Ref: ${input.quoteRef}<br/>Deposit: <strong>${input.depositLabel}</strong>
+    </p>
+    <a href="${input.quoteUrl}" style="display:inline-block;background:#0a0a0a;color:#fff;text-decoration:none;padding:14px 22px;border-radius:999px;font-size:14px;font-weight:600">
+      View quote &amp; pay deposit
+    </a>
+    <p style="margin:20px 0 0;font-size:12px;color:#737373;word-break:break-all">${input.quoteUrl}</p>
+  </div>
+</body>
+</html>`;
+
+  return { to: input.to, subject, text, html };
+}
+
+export async function sendQuoteToClientEmail(input: QuoteEmailInput): Promise<void> {
+  await sendEmail(buildQuoteEmailPayload(input));
+}
+
 export async function sendOtpEmail(input: {
   to: string;
   code: string;
@@ -158,60 +224,5 @@ ${uk.brand}`;
     subject,
     text,
     html: `<p>${text.replace(/\n/g, "<br/>")}</p>`,
-  });
-}
-
-export async function sendQuoteToClientEmail(input: {
-  to: string;
-  clientName: string;
-  businessName: string;
-  jobTitle: string;
-  quoteRef: string;
-  depositLabel: string;
-  quoteUrl: string;
-}): Promise<void> {
-  const subject = `Quote from ${input.businessName} — ${input.jobTitle}`;
-  const text = `Hi ${input.clientName},
-
-${input.businessName} has sent you a quote for ${input.jobTitle}.
-
-Reference: ${input.quoteRef}
-Deposit to secure booking: ${input.depositLabel}
-
-Review the full proposal and pay your deposit securely here:
-${input.quoteUrl}
-
-If you have questions, reply directly to ${input.businessName}.
-
-${uk.brand}`;
-
-  const html = `
-    <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0a0a0a">
-      <p style="color:#737373;font-size:12px;text-transform:uppercase;letter-spacing:.15em">${uk.brand}</p>
-      <h1 style="font-size:22px;font-weight:600">Quote from ${input.businessName}</h1>
-      <p style="color:#525252;line-height:1.6">Hi ${input.clientName},</p>
-      <p style="color:#525252;line-height:1.6">
-        You have received a quote for <strong>${input.jobTitle}</strong>.
-      </p>
-      <p style="margin:20px 0;padding:16px;background:#fafafa;border-radius:12px;font-size:14px;line-height:1.6">
-        Reference: ${input.quoteRef}<br/>
-        Deposit to secure booking: <strong>${input.depositLabel}</strong>
-      </p>
-      <p style="margin:28px 0">
-        <a href="${input.quoteUrl}" style="display:inline-block;background:#0a0a0a;color:#fff;text-decoration:none;padding:14px 24px;border-radius:999px;font-size:14px;font-weight:500">
-          View quote & pay deposit
-        </a>
-      </p>
-      <p style="color:#737373;font-size:13px;line-height:1.6">
-        Or copy this link: ${input.quoteUrl}
-      </p>
-    </div>
-  `;
-
-  await sendEmail({
-    to: input.to,
-    subject,
-    text,
-    html,
   });
 }

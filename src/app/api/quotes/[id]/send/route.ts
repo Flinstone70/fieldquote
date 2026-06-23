@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { sendQuoteToClientEmail } from "@/lib/email";
@@ -9,6 +10,8 @@ import {
   formatQuoteRef,
   quoteTotalPence,
 } from "@/lib/format";
+
+export const maxDuration = 30;
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -28,25 +31,28 @@ export async function POST(_request: Request, { params }: Params) {
   const total = quoteTotalPence(quote.lineItems);
   const deposit = depositPence(total, quote.depositPercent);
 
-  try {
-    await sendQuoteToClientEmail({
-      to: quote.clientEmail,
-      clientName: quote.clientName,
-      businessName: quote.businessName,
-      jobTitle: quote.jobTitle,
-      quoteRef: formatQuoteRef(quote.id),
-      depositLabel: formatGBP(deposit),
-      quoteUrl,
-    });
+  const emailInput = {
+    to: quote.clientEmail,
+    clientName: quote.clientName,
+    businessName: quote.businessName,
+    jobTitle: quote.jobTitle,
+    quoteRef: formatQuoteRef(quote.id),
+    depositLabel: formatGBP(deposit),
+    quoteUrl,
+  };
 
-    return NextResponse.json({
-      ok: true,
-      sentTo: quote.clientEmail,
-      quoteUrl,
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Could not send quote email.";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  after(async () => {
+    try {
+      await sendQuoteToClientEmail(emailInput);
+    } catch (error) {
+      console.error("Background quote email failed:", error);
+    }
+  });
+
+  return NextResponse.json({
+    ok: true,
+    queued: true,
+    sentTo: quote.clientEmail,
+    quoteUrl,
+  });
 }

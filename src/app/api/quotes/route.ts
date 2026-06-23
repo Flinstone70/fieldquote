@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/auth/users";
 import { getQuotePublicUrl } from "@/lib/app-url";
@@ -72,24 +72,28 @@ export async function POST(request: Request) {
 
     let emailed = false;
     if (body.sendToClient) {
-      try {
-        const quoteUrl = getQuotePublicUrl(quote.id);
-        const total = quoteTotalPence(quote.lineItems);
-        const deposit = depositPence(total, quote.depositPercent);
+      const quoteUrl = getQuotePublicUrl(quote.id);
+      const total = quoteTotalPence(quote.lineItems);
+      const deposit = depositPence(total, quote.depositPercent);
+      const emailInput = {
+        to: quote.clientEmail,
+        clientName: quote.clientName,
+        businessName: quote.businessName,
+        jobTitle: quote.jobTitle,
+        quoteRef: formatQuoteRef(quote.id),
+        depositLabel: formatGBP(deposit),
+        quoteUrl,
+      };
 
-        await sendQuoteToClientEmail({
-          to: quote.clientEmail,
-          clientName: quote.clientName,
-          businessName: quote.businessName,
-          jobTitle: quote.jobTitle,
-          quoteRef: formatQuoteRef(quote.id),
-          depositLabel: formatGBP(deposit),
-          quoteUrl,
-        });
-        emailed = true;
-      } catch (error) {
-        console.error("Quote created but email failed:", error);
-      }
+      after(async () => {
+        try {
+          await sendQuoteToClientEmail(emailInput);
+        } catch (error) {
+          console.error("Background quote email failed:", error);
+        }
+      });
+
+      emailed = true;
     }
 
     return NextResponse.json({ quote, emailed }, { status: 201 });

@@ -92,8 +92,8 @@ export function SendQuotePanel({
 
       {sent ? (
         <p className="mt-4 animate-fade-in rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
-          Quote emailed to {clientEmail}. Status updates appear here when they
-          respond.
+          Quote is on its way to {clientEmail}. Delivery usually takes under a
+          minute — ask them to check spam if it doesn&apos;t arrive.
         </p>
       ) : null}
 

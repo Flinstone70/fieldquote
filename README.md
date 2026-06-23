@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FieldQuote (Archived / Paused)
 
-## Getting Started
+Project status: paused on `2026-06-24`  
+Current branch: `main`  
+Last known good deployed commit: `00d1d4e`
 
-First, run the development server:
+This repository is intentionally archived for now so work is preserved and easy to restart later.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What FieldQuote Is
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+FieldQuote is a SaaS app for trades and field-service businesses to:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- create professional quotes
+- send client quote links
+- track accept/decline/payment status
+- run subscription billing (PayPal)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Current Product State
 
-## Learn More
+- Auth and guards are implemented (OTP + session checks + route protection).
+- PayPal subscription flow is implemented (sandbox and live-ready).
+- PayPal webhook signature verification is implemented.
+- Rate limiting and core security headers are implemented.
+- Pricing ladder is implemented:
+  - Free Trial: 14 days
+  - Professional: £79/month (up to 50 quotes/month)
+  - Business: £149/month (unlimited quotes)
 
-To learn more about Next.js, take a look at the following resources:
+## Quick Restart
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Install dependencies:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+2. Copy env template and fill values:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   cp .env.example .env.local
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Run local app:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Build check:
+
+   ```bash
+   npm run build
+   ```
+
+## Environment Variables (Core)
+
+- `AUTH_SECRET`
+- `DATABASE_URL`
+- `NEXT_PUBLIC_APP_URL`
+- `PAYPAL_MODE`
+- `PAYPAL_CLIENT_ID`
+- `PAYPAL_CLIENT_SECRET`
+- `PAYPAL_PLAN_PROFESSIONAL`
+- `PAYPAL_PLAN_BUSINESS`
+- `PAYPAL_WEBHOOK_ID`
+
+Optional:
+
+- SMTP or Resend env vars for email sending
+- Stripe env vars for deposit collection
+
+## Before Relaunching
+
+Follow [docs/ARCHIVE_NOTES.md](docs/ARCHIVE_NOTES.md) for:
+
+- legal/policy checklist
+- sandbox-to-live checklist
+- parent-approval summary
+- rollback plan
+
+## Notes
+
+- Repository may contain additional local unstaged edits from experiments.
+- Do not use this README as legal advice; validate legal/tax requirements with local professionals before launch.

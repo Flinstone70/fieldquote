@@ -1,0 +1,35 @@
+[
+  {
+    "id": "198a4238-687d-4d09-98ba-92deadcda478",
+    "email": "flint230208@gmail.com",
+    "passwordHash": "$2b$12$Ij.ADRQ2/ZobQavGrrdJ/uDNsC2ZvAMBsz4VlF6U1uKfinrHZiiVS",
+    "businessName": "ELLOOOOO",
+    "emailVerified": true,
+    "createdAt": "2026-06-22T16:14:26.258Z",
+    "trialEndsAt": "2026-07-06T16:14:26.258Z",
+    "subscriptionPlan": "none",
+    "subscriptionStatus": "trialing"
+  },
+  {
+    "id": "3cb219ab-6505-40a3-832c-2f08a6c88a07",
+    "email": "2501246i@student.edu.sg",
+    "passwordHash": "$2b$12$oKi13V6e3xJZP7VP6PUaJewVzHkZd.tw4vjHLjtnyE7hokcBzG85a",
+    "businessName": "JaJa's company",
+    "emailVerified": true,
+    "createdAt": "2026-06-22T16:27:53.017Z",
+    "trialEndsAt": "2026-07-06T16:27:53.018Z",
+    "subscriptionPlan": "none",
+    "subscriptionStatus": "trialing"
+  },
+  {
+    "id": "11c0a72a-23d4-4a01-9170-caadba5856bc",
+    "email": "2501246i@student.tp.edu.sg",
+    "passwordHash": "$2b$12$qIEY0j5awKqQr9x2/Ppx.OkLc0jTq2p8j3qURDS.U0s9rKPU6YBZu",
+    "businessName": "JaJa.Co",
+    "emailVerified": true,
+    "createdAt": "2026-06-23T01:45:49.264Z",
+    "trialEndsAt": "2026-07-07T01:45:49.265Z",
+    "subscriptionPlan": "none",
+    "subscriptionStatus": "trialing"
+  }
+]

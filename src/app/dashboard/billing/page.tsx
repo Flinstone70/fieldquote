@@ -1,5 +1,6 @@
 import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
 import { SubscribeButton } from "@/components/billing/SubscribeButton";
+import { BillingActivation } from "@/components/billing/BillingActivation";
 import { requireSession } from "@/lib/auth/guards";
 import { hasActiveSubscription, subscriptionLabel } from "@/lib/subscription";
 import { ui } from "@/lib/ui";
@@ -39,13 +40,7 @@ export default async function BillingPage({
       ) : null}
 
       {paypal === "success" ? (
-        <div className={`${ui.cardFlat} mb-8 border-neutral-950 bg-neutral-950 p-5 text-white`}>
-          <p className="font-medium">PayPal approval received</p>
-          <p className="mt-1 text-sm text-neutral-400">
-            Your subscription activates within a minute once PayPal confirms.
-            Refresh this page shortly.
-          </p>
-        </div>
+        <BillingActivation initialActive={active} />
       ) : null}
 
       {paypal === "cancelled" ? (
@@ -60,7 +55,15 @@ export default async function BillingPage({
         <p className="text-xs font-medium uppercase tracking-wider text-neutral-400">
           Current status
         </p>
-        <p className="mt-2 text-xl font-semibold">{label}</p>
+        <div className="mt-2 flex items-center gap-2.5">
+          <span
+            className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+              active ? "bg-emerald-500" : "bg-neutral-300"
+            }`}
+            aria-hidden="true"
+          />
+          <p className="text-xl font-semibold">{label}</p>
+        </div>
         <p className="mt-2 text-sm text-neutral-500">
           {active
             ? "Your company can create and send client quotes."
@@ -109,9 +112,25 @@ export default async function BillingPage({
                 {item.price}
                 <span className="text-base font-normal text-neutral-400">/month</span>
               </p>
-              <ul className="mt-6 space-y-2 text-sm text-neutral-600">
+              <ul className="mt-6 space-y-2.5 text-sm text-neutral-600">
                 {item.features.map((feature) => (
-                  <li key={feature}>✓ {feature}</li>
+                  <li key={feature} className="flex items-start gap-2.5">
+                    <svg
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className={`mt-0.5 h-4 w-4 shrink-0 ${
+                        item.highlighted ? "text-amber-500" : "text-neutral-900"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0l-3.5-3.5a1 1 0 1 1 1.4-1.4l2.8 2.8 6.8-6.8a1 1 0 0 1 1.4 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>{feature}</span>
+                  </li>
                 ))}
               </ul>
               <div className="mt-8">
@@ -125,19 +144,21 @@ export default async function BillingPage({
           ))}
         </div>
       ) : (
-        <div className={`${ui.cardMuted} mt-10 p-6`}>
-          <p className="text-sm text-neutral-600">
-            Manage or cancel your subscription in your{" "}
-            <a
-              href="https://www.paypal.com/myaccount/autopay/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-neutral-950 underline underline-offset-4"
-            >
-              PayPal account
-            </a>
-            .
+        <div className={`${ui.card} mt-10 p-6 sm:p-8`}>
+          <h3 className="text-base font-semibold">Manage your subscription</h3>
+          <p className="mt-1.5 text-sm text-neutral-500">
+            Your plan renews automatically each month via PayPal. You can update
+            your payment method or cancel anytime from PayPal — your access stays
+            active until the end of the paid period.
           </p>
+          <a
+            href="https://www.paypal.com/myaccount/autopay/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${ui.btnSecondary} mt-5 inline-flex`}
+          >
+            Manage in PayPal
+          </a>
         </div>
       )}
 

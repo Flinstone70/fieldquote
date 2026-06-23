@@ -6,6 +6,7 @@ import {
   setSessionCookie,
 } from "@/lib/auth/session";
 import { markEmailVerified, verifyOtp } from "@/lib/auth/users";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
@@ -14,6 +15,18 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Verification session expired. Sign up again or request a new code." },
         { status: 401 },
+      );
+    }
+
+    const limit = await rateLimit(
+      `verify-email:${pending.userId}:${getClientIp(request)}`,
+      15,
+      600,
+    );
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please request a new code shortly." },
+        { status: 429 },
       );
     }
 

@@ -22,7 +22,7 @@ function subscriptionActive(session: SessionUser): boolean {
   });
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const session = await getSessionFromRequest(request);
 
@@ -71,9 +71,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/verify-email",
-    "/verify-login",
-  ],
+  matcher: ["/dashboard/:path*", "/verify-email", "/verify-login"],
 };

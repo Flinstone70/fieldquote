@@ -30,6 +30,7 @@ export interface OtpRecord {
   purpose: OtpPurpose;
   expiresAt: string;
   used: boolean;
+  attempts?: number;
   createdAt: string;
 }
 

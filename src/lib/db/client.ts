@@ -82,7 +82,16 @@ export async function ensureSchema(): Promise<void> {
           purpose TEXT NOT NULL,
           expires_at TIMESTAMPTZ NOT NULL,
           used BOOLEAN NOT NULL DEFAULT FALSE,
+          attempts INTEGER NOT NULL DEFAULT 0,
           created_at TIMESTAMPTZ NOT NULL
+        )
+      `;
+      await sql`ALTER TABLE otps ADD COLUMN IF NOT EXISTS attempts INTEGER NOT NULL DEFAULT 0`;
+      await sql`
+        CREATE TABLE IF NOT EXISTS rate_limits (
+          id TEXT PRIMARY KEY,
+          hits INTEGER NOT NULL DEFAULT 0,
+          window_start TIMESTAMPTZ NOT NULL
         )
       `;
       await sql`

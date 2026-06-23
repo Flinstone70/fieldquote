@@ -5,7 +5,7 @@ import {
   updateUserSubscription,
 } from "@/lib/auth/users";
 import { sendSubscriptionActiveEmail } from "@/lib/email";
-import { planFromPayPalPlanId } from "@/lib/paypal";
+import { planFromPayPalPlanId, verifyPayPalWebhook } from "@/lib/paypal";
 
 type PayPalWebhook = {
   event_type: string;
@@ -19,7 +19,15 @@ type PayPalWebhook = {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as PayPalWebhook;
+    const rawBody = await request.text();
+
+    const verified = await verifyPayPalWebhook(request.headers, rawBody);
+    if (!verified) {
+      // Reject anything we can't cryptographically attribute to PayPal.
+      return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+    }
+
+    const body = JSON.parse(rawBody) as PayPalWebhook;
     const eventType = body.event_type;
     const resource = body.resource ?? {};
     const subscriptionId = resource.id;

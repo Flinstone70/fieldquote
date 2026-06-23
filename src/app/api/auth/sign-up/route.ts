@@ -16,9 +16,19 @@ import {
 } from "@/lib/auth/users";
 import { databaseErrorMessage } from "@/lib/db/client";
 import { devOtpCode, sendOtpEmail } from "@/lib/email";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const limit = await rateLimit(`signup:${ip}`, 5, 600);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many sign-up attempts. Please try again later." },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const businessName = String(body.businessName ?? "").trim();
     const email = String(body.email ?? "");

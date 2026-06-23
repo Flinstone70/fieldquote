@@ -1,4 +1,5 @@
 import { uk } from "@/lib/uk-copy";
+import { getAppOrigin } from "@/lib/app-url";
 import type { PayPalPlanKey } from "@/lib/types";
 
 const PAYPAL_API =
@@ -52,7 +53,7 @@ export async function createPayPalSubscription(input: {
 }): Promise<{ approvalUrl: string; subscriptionId: string }> {
   const token = await getPayPalAccessToken();
   const planId = getPayPalPlanId(input.plan);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = getAppOrigin();
 
   const response = await fetch(`${PAYPAL_API}/v1/billing/subscriptions`, {
     method: "POST",
@@ -110,4 +111,62 @@ export function planFromPayPalPlanId(planId: string): PayPalPlanKey | null {
   if (planId === process.env.PAYPAL_PLAN_PROFESSIONAL) return "professional";
   if (planId === process.env.PAYPAL_PLAN_BUSINESS) return "business";
   return null;
+}
+
+/**
+ * Verifies a PayPal webhook came from PayPal using the transmission headers and
+ * the configured webhook ID. Without this, anyone could POST a fake
+ * "subscription activated" event and unlock a paid plan for free.
+ */
+export async function verifyPayPalWebhook(
+  headers: Headers,
+  rawBody: string,
+): Promise<boolean> {
+  const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+  if (!webhookId) return false;
+
+  const transmissionId = headers.get("paypal-transmission-id");
+  const transmissionTime = headers.get("paypal-transmission-time");
+  const transmissionSig = headers.get("paypal-transmission-sig");
+  const certUrl = headers.get("paypal-cert-url");
+  const authAlgo = headers.get("paypal-auth-algo");
+
+  if (
+    !transmissionId ||
+    !transmissionTime ||
+    !transmissionSig ||
+    !certUrl ||
+    !authAlgo
+  ) {
+    return false;
+  }
+
+  try {
+    const token = await getPayPalAccessToken();
+    const response = await fetch(
+      `${PAYPAL_API}/v1/notifications/verify-webhook-signature`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          transmission_id: transmissionId,
+          transmission_time: transmissionTime,
+          cert_url: certUrl,
+          auth_algo: authAlgo,
+          transmission_sig: transmissionSig,
+          webhook_id: webhookId,
+          webhook_event: JSON.parse(rawBody),
+        }),
+      },
+    );
+
+    if (!response.ok) return false;
+    const data = (await response.json()) as { verification_status?: string };
+    return data.verification_status === "SUCCESS";
+  } catch {
+    return false;
+  }
 }

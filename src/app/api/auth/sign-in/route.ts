@@ -10,9 +10,19 @@ import {
   purgeExpiredOtps,
 } from "@/lib/auth/users";
 import { devOtpCode, sendOtpEmail } from "@/lib/email";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const limit = await rateLimit(`signin:${ip}`, 10, 300);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again in a few minutes." },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
     const email = String(body.email ?? "");
     const password = String(body.password ?? "");

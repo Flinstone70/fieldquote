@@ -189,6 +189,7 @@ export async function createOtp(
     purpose,
     expiresAt: new Date(now + OTP_TTL_MS).toISOString(),
     used: false,
+    attempts: 0,
     createdAt: new Date().toISOString(),
   };
 
@@ -241,6 +242,8 @@ export async function createOtp(
   return { record, code };
 }
 
+const MAX_OTP_ATTEMPTS = 5;
+
 export async function verifyOtp(input: {
   userId: string;
   code: string;
@@ -249,41 +252,93 @@ export async function verifyOtp(input: {
   const user = await findUserById(input.userId);
   if (!user) return { ok: false, error: "Account not found." };
 
+  const code = input.code.trim();
+
   if (useDatabase()) {
     await ensureSchema();
     const sql = getSql();
+
+    // Get the latest active code for this user+purpose, regardless of value,
+    // so we can count failed attempts and lock out brute-force guessing.
     const rows = await sql`
       SELECT * FROM otps
       WHERE user_id = ${input.userId}
         AND purpose = ${input.purpose}
         AND used = FALSE
-        AND code = ${input.code.trim()}
       ORDER BY created_at DESC LIMIT 1
     `;
-    const record = rows[0] as { id: string; expires_at: string } | undefined;
+    const record = rows[0] as
+      | { id: string; code: string; expires_at: string; attempts: number }
+      | undefined;
+
     if (!record) {
-      return { ok: false, error: "Invalid code. Check the number and try again." };
+      return { ok: false, error: "Invalid or expired code. Request a new one." };
     }
     if (new Date(record.expires_at).getTime() < Date.now()) {
+      await sql`UPDATE otps SET used = TRUE WHERE id = ${record.id}`;
       return { ok: false, error: "This code has expired. Request a new one." };
+    }
+    if (record.attempts >= MAX_OTP_ATTEMPTS) {
+      await sql`UPDATE otps SET used = TRUE WHERE id = ${record.id}`;
+      return {
+        ok: false,
+        error: "Too many incorrect attempts. Request a new code.",
+      };
+    }
+    if (record.code !== code) {
+      await sql`UPDATE otps SET attempts = attempts + 1 WHERE id = ${record.id}`;
+      const left = MAX_OTP_ATTEMPTS - (record.attempts + 1);
+      return {
+        ok: false,
+        error:
+          left > 0
+            ? `Invalid code. ${left} attempt${left === 1 ? "" : "s"} left.`
+            : "Too many incorrect attempts. Request a new code.",
+      };
     }
     await sql`UPDATE otps SET used = TRUE WHERE id = ${record.id}`;
     return { ok: true, user };
   }
 
   const otps = await listOtpsJson();
-  const record = otps.find(
-    (o) =>
-      o.userId === input.userId &&
-      o.purpose === input.purpose &&
-      !o.used &&
-      o.code === input.code.trim(),
-  );
+  const record = otps
+    .filter(
+      (o) =>
+        o.userId === input.userId && o.purpose === input.purpose && !o.used,
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )[0];
+
   if (!record) {
-    return { ok: false, error: "Invalid code. Check the number and try again." };
+    return { ok: false, error: "Invalid or expired code. Request a new one." };
   }
   if (new Date(record.expiresAt).getTime() < Date.now()) {
+    record.used = true;
+    await writeOtpsJson(otps);
     return { ok: false, error: "This code has expired. Request a new one." };
+  }
+  const attempts = record.attempts ?? 0;
+  if (attempts >= MAX_OTP_ATTEMPTS) {
+    record.used = true;
+    await writeOtpsJson(otps);
+    return {
+      ok: false,
+      error: "Too many incorrect attempts. Request a new code.",
+    };
+  }
+  if (record.code !== code) {
+    record.attempts = attempts + 1;
+    await writeOtpsJson(otps);
+    const left = MAX_OTP_ATTEMPTS - record.attempts;
+    return {
+      ok: false,
+      error:
+        left > 0
+          ? `Invalid code. ${left} attempt${left === 1 ? "" : "s"} left.`
+          : "Too many incorrect attempts. Request a new code.",
+    };
   }
   record.used = true;
   await writeOtpsJson(otps);

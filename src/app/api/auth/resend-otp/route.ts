@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth/session";
 import { createOtp, findUserById, purgeExpiredOtps } from "@/lib/auth/users";
 import { devOtpCode, sendOtpEmail } from "@/lib/email";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
@@ -14,6 +15,15 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Session expired. Start again." },
         { status: 401 },
+      );
+    }
+
+    const ip = getClientIp(request);
+    const limit = await rateLimit(`resend:${pending.userId}:${ip}`, 5, 600);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many code requests. Please wait a few minutes." },
+        { status: 429 },
       );
     }
 

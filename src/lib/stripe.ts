@@ -1,3 +1,4 @@
+import { getAppOrigin } from "@/lib/app-url";
 import Stripe from "stripe";
 import { depositPence, quoteTotalPence } from "./format";
 import type { Quote } from "./types";
@@ -16,11 +17,12 @@ export function getStripe(): Stripe {
 
 export async function createDepositCheckoutSession(
   quote: Quote,
-  origin: string,
+  _origin?: string,
 ): Promise<Stripe.Checkout.Session> {
   const stripe = getStripe();
   const total = quoteTotalPence(quote.lineItems);
   const deposit = depositPence(total, quote.depositPercent);
+  const origin = getAppOrigin();
 
   return stripe.checkout.sessions.create({
     mode: "payment",

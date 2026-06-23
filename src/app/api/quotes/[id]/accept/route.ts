@@ -20,8 +20,7 @@ export async function POST(_request: Request, { params }: Params) {
   }
 
   if (isStripeConfigured()) {
-    const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const session = await createDepositCheckoutSession(quote, origin);
+    const session = await createDepositCheckoutSession(quote);
 
     await updateQuoteStatus(id, "accepted", {
       acceptedAt: new Date().toISOString(),

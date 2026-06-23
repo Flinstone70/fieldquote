@@ -18,8 +18,18 @@ async function writeStoreJson(quotes: Quote[]): Promise<void> {
 }
 
 function mapQuoteRow(row: Record<string, unknown>): Quote {
+  const rawLineItems = row.line_items;
+  let lineItems: Quote["lineItems"];
+  if (typeof rawLineItems === "string") {
+    lineItems = JSON.parse(rawLineItems) as Quote["lineItems"];
+  } else if (Array.isArray(rawLineItems)) {
+    lineItems = rawLineItems as Quote["lineItems"];
+  } else {
+    lineItems = [];
+  }
+
   return {
-    id: row.id as string,
+    id: String(row.id),
     userId: row.user_id as string,
     createdAt: new Date(row.created_at as string).toISOString(),
     updatedAt: new Date(row.updated_at as string).toISOString(),
@@ -29,8 +39,8 @@ function mapQuoteRow(row: Record<string, unknown>): Quote {
     clientEmail: row.client_email as string,
     jobTitle: row.job_title as string,
     jobDescription: (row.job_description as string) ?? "",
-    lineItems: row.line_items as Quote["lineItems"],
-    depositPercent: row.deposit_percent as number,
+    lineItems,
+    depositPercent: Number(row.deposit_percent),
     status: row.status as Quote["status"],
     acceptedAt: row.accepted_at
       ? new Date(row.accepted_at as string).toISOString()
@@ -61,14 +71,24 @@ export async function listQuotes(userId: string): Promise<Quote[]> {
 }
 
 export async function getQuote(id: string): Promise<Quote | null> {
+  const quoteId = id.trim();
+  if (!quoteId) return null;
+
   if (useDatabase()) {
     await ensureSchema();
     const sql = getSql();
-    const rows = await sql`SELECT * FROM quotes WHERE id = ${id} LIMIT 1`;
+    const rows = await sql`SELECT * FROM quotes WHERE id = ${quoteId} LIMIT 1`;
     return rows[0] ? mapQuoteRow(rows[0] as Record<string, unknown>) : null;
   }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "DATABASE_URL is not configured on the live site. Quotes cannot be loaded.",
+    );
+  }
+
   const quotes = await ensureStoreJson();
-  return quotes.find((quote) => quote.id === id) ?? null;
+  return quotes.find((quote) => quote.id === quoteId) ?? null;
 }
 
 export async function getQuoteForUser(
@@ -122,6 +142,12 @@ export async function createQuote(
       )
     `;
     return quote;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "DATABASE_URL is not configured on the live site. Quotes cannot be saved.",
+    );
   }
 
   const quotes = await ensureStoreJson();

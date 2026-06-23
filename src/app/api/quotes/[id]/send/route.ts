@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { sendQuoteToClientEmail } from "@/lib/email";
 import { getQuoteForUser } from "@/lib/quotes-store";
+import { getQuotePublicUrl } from "@/lib/app-url";
 import {
   depositPence,
   formatGBP,
@@ -23,8 +24,7 @@ export async function POST(_request: Request, { params }: Params) {
     return NextResponse.json({ error: "Quote not found." }, { status: 404 });
   }
 
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const quoteUrl = `${origin.replace(/\/$/, "")}/q/${quote.id}`;
+  const quoteUrl = getQuotePublicUrl(quote.id);
   const total = quoteTotalPence(quote.lineItems);
   const deposit = depositPence(total, quote.depositPercent);
 
@@ -39,7 +39,11 @@ export async function POST(_request: Request, { params }: Params) {
       quoteUrl,
     });
 
-    return NextResponse.json({ ok: true, sentTo: quote.clientEmail });
+    return NextResponse.json({
+      ok: true,
+      sentTo: quote.clientEmail,
+      quoteUrl,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Could not send quote email.";

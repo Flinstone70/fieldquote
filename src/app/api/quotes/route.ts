@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/auth/users";
+import { getQuotePublicUrl } from "@/lib/app-url";
 import { sendQuoteToClientEmail } from "@/lib/email";
 import {
   depositPence,
@@ -72,9 +73,7 @@ export async function POST(request: Request) {
     let emailed = false;
     if (body.sendToClient) {
       try {
-        const origin =
-          process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-        const quoteUrl = `${origin.replace(/\/$/, "")}/q/${quote.id}`;
+        const quoteUrl = getQuotePublicUrl(quote.id);
         const total = quoteTotalPence(quote.lineItems);
         const deposit = depositPence(total, quote.depositPercent);
 

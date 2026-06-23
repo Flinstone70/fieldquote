@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { DashboardBackLink } from "@/components/dashboard/DashboardBackLink";
 import { QuoteDocument } from "@/components/quotes/QuoteDocument";
 import { QuoteStatusTimeline } from "@/components/quotes/QuoteStatusTimeline";
 import { SendQuotePanel } from "@/components/quotes/SendQuotePanel";
@@ -37,14 +37,9 @@ export function OwnerQuoteView({
       ) : null}
 
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <Link
-            href="/dashboard"
-            className="text-sm text-neutral-500 transition-colors duration-200 hover:text-neutral-950"
-          >
-            ← Back to dashboard
-          </Link>
-          <p className={`${ui.sectionLabel} mt-6`}>Quote management</p>
+        <div className="min-w-0 flex-1">
+          <DashboardBackLink />
+          <p className={`${ui.sectionLabel} block`}>Quote management</p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {quote.jobTitle}
           </h1>

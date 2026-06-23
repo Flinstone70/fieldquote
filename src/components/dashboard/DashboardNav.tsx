@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { hasActiveSubscription, subscriptionLabel } from "@/lib/subscription";
 import type { SubscriptionStatus } from "@/lib/types";
 import { ui } from "@/lib/ui";
@@ -24,6 +25,7 @@ export function DashboardNav({
   trialEndsAt: string;
 }) {
   const pathname = usePathname();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
   const user = {
     subscriptionStatus,
     trialEndsAt,
@@ -36,6 +38,10 @@ export function DashboardNav({
     createdAt: "",
   };
   const active = hasActiveSubscription(user);
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -62,7 +68,7 @@ export function DashboardNav({
           >
             {subscriptionLabel(user)}
           </span>
-          <Link href="/dashboard/new" className={ui.btnPrimary}>
+          <Link href="/dashboard/new" prefetch className={ui.btnPrimary}>
             + New quote
           </Link>
         </div>
@@ -70,14 +76,19 @@ export function DashboardNav({
       <nav className="flex gap-1 overflow-x-auto p-2">
         {links.map((link) => {
           const activeLink = isActive(link.href, link.exact);
+          const isPending = pendingHref === link.href;
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+              prefetch
+              onClick={() => setPendingHref(link.href)}
+              className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-150 ${
                 activeLink
                   ? "bg-neutral-950 text-white shadow-sm"
-                  : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
+                  : isPending
+                    ? "bg-neutral-200 text-neutral-700"
+                    : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
               }`}
             >
               {link.label}

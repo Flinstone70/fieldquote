@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { DashboardBackLink } from "@/components/dashboard/DashboardBackLink";
 import { SubscribeButton } from "@/components/billing/SubscribeButton";
 import { requireSession } from "@/lib/auth/guards";
 import { hasActiveSubscription, subscriptionLabel } from "@/lib/subscription";
@@ -20,13 +20,8 @@ export default async function BillingPage({
   return (
     <>
       <div className="mb-8">
-        <Link
-          href="/dashboard"
-          className="text-sm text-neutral-500 transition hover:text-neutral-950"
-        >
-          ← Back to overview
-        </Link>
-        <p className={`${ui.sectionLabel} mt-6`}>Billing</p>
+        <DashboardBackLink />
+        <p className={`${ui.sectionLabel} block`}>Billing</p>
         <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Company subscription
         </h2>

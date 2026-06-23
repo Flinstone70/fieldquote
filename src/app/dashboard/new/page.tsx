@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { assertActiveSubscription, requireSession } from "@/lib/auth/guards";
+import { DashboardBackLink } from "@/components/dashboard/DashboardBackLink";
 import { QuoteForm } from "@/components/QuoteForm";
+import { assertActiveSubscription, requireSession } from "@/lib/auth/guards";
 import { ui } from "@/lib/ui";
 
 export default async function NewQuotePage() {
@@ -10,13 +10,8 @@ export default async function NewQuotePage() {
   return (
     <>
       <div className="mb-8">
-        <Link
-          href="/dashboard"
-          className="text-sm text-neutral-500 transition-colors duration-200 hover:text-neutral-950"
-        >
-          ← Back to overview
-        </Link>
-        <p className={`${ui.sectionLabel} mt-6`}>New proposal</p>
+        <DashboardBackLink />
+        <p className={`${ui.sectionLabel} block`}>New proposal</p>
         <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Create a client quote
         </h2>

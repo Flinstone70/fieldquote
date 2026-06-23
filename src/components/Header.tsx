@@ -26,12 +26,14 @@ export function Header({ marketing = false, app = false }: { marketing?: boolean
   }, [pathname]);
 
   useEffect(() => {
+    if (app && authChecked) return;
+
     fetch("/api/auth/me", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => setUser(data.user ?? null))
       .catch(() => setUser(null))
       .finally(() => setAuthChecked(true));
-  }, [pathname]);
+  }, [app, authChecked, pathname]);
 
   async function signOut() {
     try {

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import { clearAuthCookies, getSession } from "@/lib/auth/session";
@@ -6,10 +7,10 @@ import { getQuoteForUser } from "@/lib/quotes-store";
 import { hasActiveSubscription } from "@/lib/subscription";
 import type { Quote, SessionUser, User } from "@/lib/types";
 
-export async function requireSession(): Promise<{
+export const requireSession = cache(async (): Promise<{
   session: SessionUser;
   user: User;
-}> {
+}> => {
   const session = await getSession();
   if (!session) {
     redirect("/sign-in?reason=auth_required");
@@ -22,7 +23,7 @@ export async function requireSession(): Promise<{
   }
 
   return { session, user };
-}
+});
 
 export async function requireSessionApi(): Promise<
   | { session: SessionUser; user: User; error?: never }

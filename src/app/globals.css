@@ -6,6 +6,9 @@
   --muted: #737373;
   --border: #e5e5e5;
   --surface: #fafafa;
+  --accent: #d97706;
+  --accent-soft: #fef3c7;
+  --accent-dark: #92400e;
 }
 
 @theme inline {
@@ -87,8 +90,19 @@ body {
   animation-delay: 200ms;
 }
 
-.animate-delay-300 {
-  animation-delay: 300ms;
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .grain {
@@ -102,7 +116,8 @@ body {
 
   .animate-fade-up,
   .animate-fade-in,
-  .animate-marquee {
+  .animate-marquee,
+  .animate-page-enter {
     animation: none;
   }
 }

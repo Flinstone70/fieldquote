@@ -10,8 +10,8 @@ const styles: Record<QuoteStatus, string> = {
 
 const labels: Record<QuoteStatus, string> = {
   draft: "Draft",
-  sent: "Awaiting client",
-  accepted: "Accepted",
+  sent: "Waiting for client",
+  accepted: "Payment pending",
   deposit_paid: "Deposit paid",
   declined: "Declined",
 };

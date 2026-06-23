@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/auth/users";
+import { sendQuoteToClientEmail } from "@/lib/email";
+import {
+  depositPence,
+  formatGBP,
+  formatQuoteRef,
+  quoteTotalPence,
+} from "@/lib/format";
 import { createQuote, listQuotes } from "@/lib/quotes-store";
 import { hasActiveSubscription } from "@/lib/subscription";
 import type { CreateQuoteInput } from "@/lib/types";
+
+type CreateQuoteBody = CreateQuoteInput & { sendToClient?: boolean };
 
 export async function GET() {
   const session = await getSession();
@@ -33,7 +42,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = (await request.json()) as CreateQuoteInput;
+    const body = (await request.json()) as CreateQuoteBody;
 
     if (
       !body.clientName ||
@@ -59,7 +68,32 @@ export async function POST(request: Request) {
       businessName: body.businessName?.trim() || session.businessName,
       businessEmail: body.businessEmail?.trim() || session.email,
     });
-    return NextResponse.json({ quote }, { status: 201 });
+
+    let emailed = false;
+    if (body.sendToClient) {
+      try {
+        const origin =
+          process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+        const quoteUrl = `${origin.replace(/\/$/, "")}/q/${quote.id}`;
+        const total = quoteTotalPence(quote.lineItems);
+        const deposit = depositPence(total, quote.depositPercent);
+
+        await sendQuoteToClientEmail({
+          to: quote.clientEmail,
+          clientName: quote.clientName,
+          businessName: quote.businessName,
+          jobTitle: quote.jobTitle,
+          quoteRef: formatQuoteRef(quote.id),
+          depositLabel: formatGBP(deposit),
+          quoteUrl,
+        });
+        emailed = true;
+      } catch (error) {
+        console.error("Quote created but email failed:", error);
+      }
+    }
+
+    return NextResponse.json({ quote, emailed }, { status: 201 });
   } catch {
     return NextResponse.json(
       { error: "Could not create quote." },

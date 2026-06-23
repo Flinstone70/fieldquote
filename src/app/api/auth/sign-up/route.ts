@@ -14,6 +14,7 @@ import {
   findUserByEmail,
   purgeExpiredOtps,
 } from "@/lib/auth/users";
+import { databaseErrorMessage } from "@/lib/db/client";
 import { sendOtpEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
@@ -74,8 +75,10 @@ export async function POST(request: Request) {
       message: "Verification code sent to your email.",
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Could not create account.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Sign-up failed:", error);
+    return NextResponse.json(
+      { error: databaseErrorMessage(error) },
+      { status: 500 },
+    );
   }
 }

@@ -1,9 +1,26 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getSessionFromRequest } from "@/lib/auth/jwt";
+import { getSessionFromRequest, verifyToken } from "@/lib/auth/jwt";
+import { hasActiveSubscription } from "@/lib/subscription";
+import type { SessionUser } from "@/lib/types";
 
 const PROTECTED_PREFIXES = ["/dashboard"];
-const AUTH_PAGES = ["/sign-in", "/sign-up", "/verify-email", "/verify-login"];
+const VERIFY_PAGES = ["/verify-email", "/verify-login"];
+const PENDING_COOKIE = "fq_pending";
+
+function subscriptionActive(session: SessionUser): boolean {
+  return hasActiveSubscription({
+    id: session.userId,
+    email: session.email,
+    passwordHash: "",
+    businessName: session.businessName,
+    emailVerified: session.emailVerified,
+    createdAt: "",
+    trialEndsAt: session.trialEndsAt,
+    subscriptionPlan: session.subscriptionPlan,
+    subscriptionStatus: session.subscriptionStatus,
+  });
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -12,7 +29,7 @@ export async function middleware(request: NextRequest) {
   const isProtected = PROTECTED_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix),
   );
-  const isAuthPage = AUTH_PAGES.some((page) => pathname.startsWith(page));
+  const isVerifyPage = VERIFY_PAGES.some((page) => pathname.startsWith(page));
 
   if (isProtected && !session) {
     const url = new URL("/sign-in", request.url);
@@ -26,8 +43,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (isAuthPage && session?.emailVerified) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (
+    isProtected &&
+    session &&
+    !subscriptionActive(session) &&
+    !pathname.startsWith("/dashboard/billing")
+  ) {
+    const url = new URL("/dashboard/billing", request.url);
+    url.searchParams.set("reason", "subscription_required");
+    return NextResponse.redirect(url);
+  }
+
+  if (isVerifyPage) {
+    const pendingToken = request.cookies.get(PENDING_COOKIE)?.value;
+    const pending = pendingToken
+      ? await verifyToken<{ purpose: string }>(pendingToken)
+      : null;
+
+    if (!pending) {
+      const url = new URL("/sign-in", request.url);
+      url.searchParams.set("reason", "verification_required");
+      return NextResponse.redirect(url);
+    }
   }
 
   return NextResponse.next();
@@ -36,8 +73,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
-    "/sign-in",
-    "/sign-up",
     "/verify-email",
     "/verify-login",
   ],

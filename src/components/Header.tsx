@@ -6,12 +6,13 @@ import { useEffect, useState } from "react";
 import type { SessionUser } from "@/lib/types";
 import { ui } from "@/lib/ui";
 
-export function Header({ marketing = false }: { marketing?: boolean }) {
+export function Header({ marketing = false, app = false }: { marketing?: boolean; app?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -28,7 +29,8 @@ export function Header({ marketing = false }: { marketing?: boolean }) {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((data) => setUser(data.user ?? null))
-      .catch(() => setUser(null));
+      .catch(() => setUser(null))
+      .finally(() => setAuthChecked(true));
   }, [pathname]);
 
   async function signOut() {
@@ -47,6 +49,10 @@ export function Header({ marketing = false }: { marketing?: boolean }) {
       ]
     : [];
 
+  const showMarketingAuth = marketing && authChecked && !user;
+  const showAppAuth = !marketing && !app && authChecked && !user;
+  const showSignedIn = authChecked && user;
+
   return (
     <>
       <header
@@ -57,8 +63,8 @@ export function Header({ marketing = false }: { marketing?: boolean }) {
         }`}
       >
         <div className={`${ui.container} flex items-center justify-between py-4`}>
-          <Link href="/" className="group flex items-center gap-2.5">
-            <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-neutral-950 text-xs font-semibold text-white transition group-hover:scale-105">
+          <Link href={user ? "/dashboard" : "/"} className="group flex items-center gap-2.5">
+            <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-neutral-950 text-xs font-semibold text-white ring-2 ring-transparent transition group-hover:scale-105 group-hover:ring-amber-400/40">
               FQ
             </span>
             <div className="leading-none">
@@ -71,45 +77,46 @@ export function Header({ marketing = false }: { marketing?: boolean }) {
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            {navLinks.map((link) =>
-              link.href.startsWith("#") ? (
-                <a key={link.href} href={link.href} className={ui.btnGhost}>
-                  {link.label}
-                </a>
-              ) : (
-                <Link key={link.href} href={link.href} className={ui.btnGhost}>
-                  {link.label}
-                </Link>
-              ),
-            )}
-            {user ? (
-              <Link
-                href="/dashboard"
-                className={`${ui.btnGhost} ${pathname.startsWith("/dashboard") ? "bg-neutral-100 text-neutral-950" : ""}`}
-              >
-                Dashboard
-              </Link>
-            ) : null}
-          </nav>
+          {!app ? (
+            <nav className="hidden items-center gap-1 lg:flex">
+              {navLinks.map((link) =>
+                link.href.startsWith("#") ? (
+                  <a key={link.href} href={link.href} className={ui.btnGhost}>
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link key={link.href} href={link.href} className={ui.btnGhost}>
+                    {link.label}
+                  </Link>
+                ),
+              )}
+            </nav>
+          ) : null}
 
           <div className="flex items-center gap-2">
-            {user ? (
+            {showSignedIn ? (
               <>
-                <span className="hidden max-w-[140px] truncate text-sm text-neutral-500 sm:inline">
+                <Link
+                  href="/dashboard"
+                  className="hidden max-w-[160px] truncate text-sm font-medium text-neutral-700 transition hover:text-neutral-950 sm:inline"
+                >
                   {user.businessName}
-                </span>
+                </Link>
+                {!app ? (
+                  <>
+                    <Link href="/dashboard/billing" className={`hidden sm:inline-flex ${ui.btnGhost}`}>
+                      Billing
+                    </Link>
+                    <Link href="/dashboard/new" className={`hidden sm:inline-flex ${ui.btnPrimary}`}>
+                      New quote
+                    </Link>
+                  </>
+                ) : null}
                 <button type="button" onClick={signOut} className={ui.btnGhost}>
                   Sign out
                 </button>
-                <Link href="/dashboard/billing" className={`hidden sm:inline-flex ${ui.btnGhost}`}>
-                  Billing
-                </Link>
-                <Link href="/dashboard/new" className={`hidden sm:inline-flex ${ui.btnPrimary}`}>
-                  New quote
-                </Link>
               </>
-            ) : marketing ? (
+            ) : showMarketingAuth || showAppAuth ? (
               <>
                 <Link href="/sign-in" className={ui.btnGhost}>
                   Sign in
@@ -118,29 +125,23 @@ export function Header({ marketing = false }: { marketing?: boolean }) {
                   Create account
                 </Link>
               </>
-            ) : (
-              <>
-                <Link href="/sign-in" className={ui.btnGhost}>
-                  Sign in
-                </Link>
-                <Link href="/sign-up" className={ui.btnPrimary}>
-                  Create account
-                </Link>
-              </>
-            )}
-            <button
-              type="button"
-              aria-label="Open menu"
-              onClick={() => setOpen((v) => !v)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 lg:hidden"
-            >
-              <span className="text-lg leading-none">{open ? "×" : "☰"}</span>
-            </button>
+            ) : null}
+
+            {!app ? (
+              <button
+                type="button"
+                aria-label="Open menu"
+                onClick={() => setOpen((v) => !v)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 lg:hidden"
+              >
+                <span className="text-lg leading-none">{open ? "×" : "☰"}</span>
+              </button>
+            ) : null}
           </div>
         </div>
       </header>
 
-      {open ? (
+      {open && !app ? (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button
             type="button"
@@ -170,10 +171,13 @@ export function Header({ marketing = false }: { marketing?: boolean }) {
                   </Link>
                 ),
               )}
-              {user ? (
+              {showSignedIn ? (
                 <>
-                  <Link href="/dashboard" className="rounded-xl px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50">
-                    Dashboard
+                  <Link
+                    href="/dashboard"
+                    className="rounded-xl px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                  >
+                    {user.businessName}
                   </Link>
                   <Link href="/dashboard/new" className={`${ui.btnPrimary} mt-3 w-full`}>
                     New quote

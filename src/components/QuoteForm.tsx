@@ -42,6 +42,7 @@ export function QuoteForm({
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [depositPercent, setDepositPercent] = useState("25");
+  const [sendToClient, setSendToClient] = useState(true);
   const [lineItems, setLineItems] = useState<LineItemDraft[]>([emptyItem()]);
 
   const previewItems = useMemo(
@@ -87,6 +88,7 @@ export function QuoteForm({
             quantity: Number(item.quantity),
             unitPricePence: Math.round(Number(item.unitPrice) * 100),
           })),
+          sendToClient,
         }),
       });
 
@@ -95,7 +97,9 @@ export function QuoteForm({
         throw new Error(data.error ?? "Failed to create quote");
       }
 
-      router.push(`/q/${data.quote.id}`);
+      const params = new URLSearchParams({ created: "1" });
+      if (sendToClient && data.emailed) params.set("emailed", "1");
+      router.push(`/dashboard/quotes/${data.quote.id}?${params.toString()}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -112,7 +116,7 @@ export function QuoteForm({
               key={section.id}
               type="button"
               onClick={() => setActiveSection(index)}
-              className={`rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wider transition ${
+              className={`rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all duration-200 ease-out ${
                 activeSection === index
                   ? "bg-neutral-950 text-white"
                   : "border border-neutral-200 text-neutral-500 hover:border-neutral-950 hover:text-neutral-950"
@@ -328,8 +332,27 @@ export function QuoteForm({
           </p>
         ) : null}
 
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-neutral-200 bg-white px-5 py-4 transition-all duration-200 hover:border-neutral-300">
+          <input
+            type="checkbox"
+            checked={sendToClient}
+            onChange={(e) => setSendToClient(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-neutral-300"
+          />
+          <span>
+            <span className="block text-sm font-medium text-neutral-950">
+              Email quote to client immediately
+            </span>
+            <span className="mt-1 block text-sm text-neutral-500">
+              Sends a secure link to{" "}
+              {clientEmail || "your client"} so they can accept and pay — you
+              stay on your company dashboard.
+            </span>
+          </span>
+        </label>
+
         <button type="submit" disabled={loading} className={`${ui.btnPrimary} w-full sm:w-auto`}>
-          {loading ? "Creating quote..." : "Create quote & get client link →"}
+          {loading ? "Creating quote..." : "Create quote →"}
         </button>
       </form>
 

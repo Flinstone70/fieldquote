@@ -2,16 +2,56 @@ import { neon } from "@neondatabase/serverless";
 
 let schemaReady: Promise<void> | null = null;
 
+/** Strip common paste mistakes from Vercel / Neon dashboard copies. */
+export function normaliseDatabaseUrl(raw: string): string {
+  let url = raw.trim();
+  if (
+    (url.startsWith('"') && url.endsWith('"')) ||
+    (url.startsWith("'") && url.endsWith("'"))
+  ) {
+    url = url.slice(1, -1).trim();
+  }
+  return url;
+}
+
 export function useDatabase(): boolean {
-  return Boolean(process.env.DATABASE_URL);
+  return Boolean(process.env.DATABASE_URL?.trim());
 }
 
 export function getSql() {
-  const url = process.env.DATABASE_URL;
+  const url = normaliseDatabaseUrl(process.env.DATABASE_URL ?? "");
   if (!url) {
     throw new Error("DATABASE_URL is not configured.");
   }
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "postgres:" && parsed.protocol !== "postgresql:") {
+      throw new Error("DATABASE_URL must start with postgresql://");
+    }
+  } catch {
+    throw new Error(
+      "DATABASE_URL is not a valid connection string. Copy the pooled URL from Neon (Connect → Connection string).",
+    );
+  }
   return neon(url);
+}
+
+/** Turn low-level Neon fetch errors into actionable setup hints. */
+export function databaseErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (
+    message.includes("fetch failed") ||
+    message.includes("Error connecting to database")
+  ) {
+    return (
+      "Could not reach the database. On Vercel, check DATABASE_URL (Neon pooled connection string, no quotes), " +
+      "confirm the Neon project is active at neon.tech, then redeploy."
+    );
+  }
+  if (message.includes("DATABASE_URL")) {
+    return message;
+  }
+  return "Could not save account. Please try again in a moment.";
 }
 
 export async function ensureSchema(): Promise<void> {

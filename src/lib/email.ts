@@ -146,3 +146,58 @@ ${uk.brand}`;
     html: `<p>${text.replace(/\n/g, "<br/>")}</p>`,
   });
 }
+
+export async function sendQuoteToClientEmail(input: {
+  to: string;
+  clientName: string;
+  businessName: string;
+  jobTitle: string;
+  quoteRef: string;
+  depositLabel: string;
+  quoteUrl: string;
+}): Promise<void> {
+  const subject = `Quote from ${input.businessName} — ${input.jobTitle}`;
+  const text = `Hi ${input.clientName},
+
+${input.businessName} has sent you a quote for ${input.jobTitle}.
+
+Reference: ${input.quoteRef}
+Deposit to secure booking: ${input.depositLabel}
+
+Review the full proposal and pay your deposit securely here:
+${input.quoteUrl}
+
+If you have questions, reply directly to ${input.businessName}.
+
+${uk.brand}`;
+
+  const html = `
+    <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;color:#0a0a0a">
+      <p style="color:#737373;font-size:12px;text-transform:uppercase;letter-spacing:.15em">${uk.brand}</p>
+      <h1 style="font-size:22px;font-weight:600">Quote from ${input.businessName}</h1>
+      <p style="color:#525252;line-height:1.6">Hi ${input.clientName},</p>
+      <p style="color:#525252;line-height:1.6">
+        You have received a quote for <strong>${input.jobTitle}</strong>.
+      </p>
+      <p style="margin:20px 0;padding:16px;background:#fafafa;border-radius:12px;font-size:14px;line-height:1.6">
+        Reference: ${input.quoteRef}<br/>
+        Deposit to secure booking: <strong>${input.depositLabel}</strong>
+      </p>
+      <p style="margin:28px 0">
+        <a href="${input.quoteUrl}" style="display:inline-block;background:#0a0a0a;color:#fff;text-decoration:none;padding:14px 24px;border-radius:999px;font-size:14px;font-weight:500">
+          View quote & pay deposit
+        </a>
+      </p>
+      <p style="color:#737373;font-size:13px;line-height:1.6">
+        Or copy this link: ${input.quoteUrl}
+      </p>
+    </div>
+  `;
+
+  await sendEmail({
+    to: input.to,
+    subject,
+    text,
+    html,
+  });
+}

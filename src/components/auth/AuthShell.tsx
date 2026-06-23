@@ -16,10 +16,10 @@ export function AuthShell({
   return (
     <main className={`${ui.page} min-h-screen`}>
       <div className="mx-auto grid min-h-screen max-w-6xl lg:grid-cols-2">
-        <div className="hidden flex-col justify-between border-r border-neutral-200 bg-neutral-950 p-10 text-white lg:flex">
+        <div className="hidden flex-col justify-between border-r border-neutral-800 bg-neutral-950 p-10 text-white lg:flex">
           <div>
             <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-semibold text-neutral-950">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-xs font-semibold text-neutral-950">
                 FQ
               </span>
               <span className="text-base font-semibold">{uk.brand}</span>
@@ -33,10 +33,10 @@ export function AuthShell({
             </p>
           </div>
           <ul className="space-y-3 text-sm text-neutral-400">
-            <li>✓ UK pricing in GBP</li>
-            <li>✓ Email verification on sign-up</li>
-            <li>✓ One-time passcode on every sign-in</li>
-            <li>✓ Secure client quote links</li>
+            <li className="flex gap-2"><span className="text-amber-400">✓</span> UK pricing in GBP</li>
+            <li className="flex gap-2"><span className="text-amber-400">✓</span> Email verification on sign-up</li>
+            <li className="flex gap-2"><span className="text-amber-400">✓</span> One-time passcode on every sign-in</li>
+            <li className="flex gap-2"><span className="text-amber-400">✓</span> Secure client quote links</li>
           </ul>
         </div>
 

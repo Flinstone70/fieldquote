@@ -89,17 +89,17 @@ export default function HomePage() {
     <>
       <Header marketing />
       <main className={ui.page}>
-        <section className="grain relative overflow-hidden border-b border-neutral-200">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(0,0,0,0.04),transparent_40%)]" />
+        <section className="grain relative overflow-hidden border-b border-neutral-200 bg-[linear-gradient(180deg,#fff7ed_0%,#ffffff_42%)]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(217,119,6,0.08),transparent_42%)]" />
           <div className={`${ui.container} relative grid items-center gap-12 py-20 lg:grid-cols-2 lg:py-28`}>
             <div className="animate-fade-up">
               <p className={ui.sectionLabel}>
-                <span className="h-px w-8 bg-neutral-300" />
+                <span className="h-px w-8 bg-amber-400" />
                 For trades & field services
               </p>
               <h1 className="text-4xl font-semibold leading-[1.06] tracking-tight text-neutral-950 sm:text-5xl lg:text-[3.4rem]">
                 Quote like a premium firm.{" "}
-                <span className="text-neutral-400">Get paid before you start.</span>
+                <span className="text-neutral-500">Get paid before you start.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-neutral-500">
                 FieldQuote gives your business a client experience that feels
@@ -260,7 +260,7 @@ export default function HomePage() {
         <section id="pricing" className="scroll-mt-24 bg-neutral-950 py-24 text-white">
           <div className={ui.container}>
             <AnimatedSection className="mx-auto max-w-2xl text-center">
-              <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-neutral-500">
+              <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-amber-500/90">
                 Pricing
               </p>
               <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">

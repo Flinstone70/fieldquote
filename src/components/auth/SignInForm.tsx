@@ -33,6 +33,7 @@ export function SignInForm() {
       }
 
       router.push(`/verify-login?email=${encodeURIComponent(data.email)}`);
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");
     } finally {

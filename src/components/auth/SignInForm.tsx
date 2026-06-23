@@ -27,12 +27,15 @@ export function SignInForm() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Sign in failed");
 
+      const params = new URLSearchParams({ email: data.email });
+      if (data.devCode) params.set("dev", data.devCode);
+
       if (data.needsEmailVerification) {
-        router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+        router.push(`/verify-email?${params.toString()}`);
         return;
       }
 
-      router.push(`/verify-login?email=${encodeURIComponent(data.email)}`);
+      router.push(`/verify-login?${params.toString()}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");

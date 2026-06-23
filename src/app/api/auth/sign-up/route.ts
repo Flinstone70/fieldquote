@@ -15,7 +15,7 @@ import {
   purgeExpiredOtps,
 } from "@/lib/auth/users";
 import { databaseErrorMessage } from "@/lib/db/client";
-import { sendOtpEmail } from "@/lib/email";
+import { devOtpCode, sendOtpEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -54,12 +54,17 @@ export async function POST(request: Request) {
     const user = await createUser({ email, passwordHash, businessName });
     const { code } = await createOtp(user.id, user.email, "email_verify");
 
-    await sendOtpEmail({
-      to: user.email,
-      code,
-      purpose: "email_verify",
-      businessName: user.businessName,
-    });
+    try {
+      await sendOtpEmail({
+        to: user.email,
+        code,
+        purpose: "email_verify",
+        businessName: user.businessName,
+      });
+    } catch (emailError) {
+      if (process.env.NODE_ENV === "production") throw emailError;
+      console.error("Dev: OTP email failed, using on-screen code.", emailError);
+    }
 
     await setPendingCookie(
       await createPendingToken({
@@ -73,6 +78,7 @@ export async function POST(request: Request) {
       ok: true,
       email: user.email,
       message: "Verification code sent to your email.",
+      devCode: devOtpCode(code),
     });
   } catch (error) {
     console.error("Sign-up failed:", error);

@@ -5,7 +5,7 @@ import {
   setPendingCookie,
 } from "@/lib/auth/session";
 import { createOtp, findUserById, purgeExpiredOtps } from "@/lib/auth/users";
-import { sendOtpEmail } from "@/lib/email";
+import { devOtpCode, sendOtpEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -24,12 +24,17 @@ export async function POST(request: Request) {
 
     await purgeExpiredOtps();
     const { code } = await createOtp(user.id, user.email, pending.purpose);
-    await sendOtpEmail({
-      to: user.email,
-      code,
-      purpose: pending.purpose,
-      businessName: user.businessName,
-    });
+    try {
+      await sendOtpEmail({
+        to: user.email,
+        code,
+        purpose: pending.purpose,
+        businessName: user.businessName,
+      });
+    } catch (emailError) {
+      if (process.env.NODE_ENV === "production") throw emailError;
+      console.error("Dev: OTP email failed, using on-screen code.", emailError);
+    }
 
     await setPendingCookie(
       await createPendingToken({
@@ -39,7 +44,7 @@ export async function POST(request: Request) {
       }),
     );
 
-    return NextResponse.json({ ok: true, email: user.email });
+    return NextResponse.json({ ok: true, email: user.email, devCode: devOtpCode(code) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not resend code.";
     return NextResponse.json({ error: message }, { status: 500 });

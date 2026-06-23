@@ -26,7 +26,7 @@ export function Header({ marketing = false, app = false }: { marketing?: boolean
   }, [pathname]);
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    fetch("/api/auth/me", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => setUser(data.user ?? null))
       .catch(() => setUser(null))
@@ -34,10 +34,12 @@ export function Header({ marketing = false, app = false }: { marketing?: boolean
   }, [pathname]);
 
   async function signOut() {
-    await fetch("/api/auth/sign-out", { method: "POST" });
-    setUser(null);
-    router.push("/");
-    router.refresh();
+    try {
+      await fetch("/api/auth/sign-out", { method: "POST", cache: "no-store" });
+    } finally {
+      setUser(null);
+      window.location.assign("/");
+    }
   }
 
   const navLinks = marketing

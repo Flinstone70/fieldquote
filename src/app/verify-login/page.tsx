@@ -9,16 +9,16 @@ export const metadata = {
 export default async function VerifyLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ email?: string; dev?: string }>;
 }) {
-  const { email } = await searchParams;
+  const { email, dev } = await searchParams;
 
   return (
     <AuthShell
       title={authCopy.verifyLoginTitle}
       subtitle={authCopy.verifyLoginSubtitle}
     >
-      <OtpForm action="verify-login" email={email} />
+      <OtpForm action="verify-login" email={email} devCode={dev} />
     </AuthShell>
   );
 }

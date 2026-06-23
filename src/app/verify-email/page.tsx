@@ -9,16 +9,16 @@ export const metadata = {
 export default async function VerifyEmailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ email?: string; dev?: string }>;
 }) {
-  const { email } = await searchParams;
+  const { email, dev } = await searchParams;
 
   return (
     <AuthShell
       title={authCopy.verifyEmailTitle}
       subtitle={authCopy.verifyEmailSubtitle}
     >
-      <OtpForm action="verify-email" email={email} />
+      <OtpForm action="verify-email" email={email} devCode={dev} />
     </AuthShell>
   );
 }

@@ -12,6 +12,20 @@ function hasSmtpConfig(): boolean {
   return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
+export function isEmailConfigured(): boolean {
+  return Boolean(process.env.RESEND_API_KEY) || hasSmtpConfig();
+}
+
+/**
+ * In local development we reveal the OTP to the client so sign-in works without
+ * a configured email provider. In production this always returns undefined so
+ * codes are only ever delivered by email.
+ */
+export function devOtpCode(code: string): string | undefined {
+  if (process.env.NODE_ENV === "production") return undefined;
+  return code;
+}
+
 async function sendViaSmtp(payload: EmailPayload): Promise<void> {
   const user = process.env.SMTP_USER!;
   const pass = process.env.SMTP_PASS!;

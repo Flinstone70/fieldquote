@@ -26,7 +26,9 @@ export function SignUpForm() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Sign up failed");
-      router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+      const params = new URLSearchParams({ email: data.email });
+      if (data.devCode) params.set("dev", data.devCode);
+      router.push(`/verify-email?${params.toString()}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign up failed");

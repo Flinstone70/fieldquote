@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { SessionUser } from "@/lib/types";
 import { ui } from "@/lib/ui";
 
 export function AlreadySignedIn({ user }: { user: SessionUser }) {
-  const router = useRouter();
-
   async function signOut() {
-    await fetch("/api/auth/sign-out", { method: "POST" });
-    router.refresh();
+    try {
+      await fetch("/api/auth/sign-out", { method: "POST", cache: "no-store" });
+    } finally {
+      window.location.assign("/sign-in");
+    }
   }
 
   return (

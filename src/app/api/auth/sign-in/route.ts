@@ -9,7 +9,7 @@ import {
   findUserByEmail,
   purgeExpiredOtps,
 } from "@/lib/auth/users";
-import { sendOtpEmail } from "@/lib/email";
+import { devOtpCode, sendOtpEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -41,12 +41,17 @@ export async function POST(request: Request) {
     if (!user.emailVerified) {
       await purgeExpiredOtps();
       const { code } = await createOtp(user.id, user.email, "email_verify");
-      await sendOtpEmail({
-        to: user.email,
-        code,
-        purpose: "email_verify",
-        businessName: user.businessName,
-      });
+      try {
+        await sendOtpEmail({
+          to: user.email,
+          code,
+          purpose: "email_verify",
+          businessName: user.businessName,
+        });
+      } catch (emailError) {
+        if (process.env.NODE_ENV === "production") throw emailError;
+        console.error("Dev: OTP email failed, using on-screen code.", emailError);
+      }
       await setPendingCookie(
         await createPendingToken({
           userId: user.id,
@@ -58,17 +63,23 @@ export async function POST(request: Request) {
         ok: true,
         needsEmailVerification: true,
         email: user.email,
+        devCode: devOtpCode(code),
       });
     }
 
     await purgeExpiredOtps();
     const { code } = await createOtp(user.id, user.email, "login");
-    await sendOtpEmail({
-      to: user.email,
-      code,
-      purpose: "login",
-      businessName: user.businessName,
-    });
+    try {
+      await sendOtpEmail({
+        to: user.email,
+        code,
+        purpose: "login",
+        businessName: user.businessName,
+      });
+    } catch (emailError) {
+      if (process.env.NODE_ENV === "production") throw emailError;
+      console.error("Dev: OTP email failed, using on-screen code.", emailError);
+    }
     await setPendingCookie(
       await createPendingToken({
         userId: user.id,
@@ -81,6 +92,7 @@ export async function POST(request: Request) {
       ok: true,
       needsLoginOtp: true,
       email: user.email,
+      devCode: devOtpCode(code),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not sign in.";

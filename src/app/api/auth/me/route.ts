@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/auth/users";
 import { userToSession } from "@/lib/db/mappers";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const session = await getSession();
   if (!session) {

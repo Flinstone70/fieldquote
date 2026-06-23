@@ -8,16 +8,19 @@ import { ui } from "@/lib/ui";
 export function OtpForm({
   action,
   email,
+  devCode,
 }: {
   action: "verify-email" | "verify-login";
   email?: string;
+  devCode?: string;
 }) {
   const router = useRouter();
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(devCode ?? "");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [revealedCode, setRevealedCode] = useState(devCode ?? "");
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -48,7 +51,13 @@ export function OtpForm({
       const response = await fetch("/api/auth/resend-otp", { method: "POST" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Could not resend code");
-      setMessage("A new code has been sent to your email.");
+      if (data.devCode) {
+        setRevealedCode(data.devCode);
+        setCode(data.devCode);
+        setMessage("New code ready (shown below — local dev mode).");
+      } else {
+        setMessage("A new code has been sent to your email.");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not resend code");
     } finally {
@@ -62,6 +71,22 @@ export function OtpForm({
         <p className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
           Code sent to <strong className="text-neutral-950">{email}</strong>
         </p>
+      ) : null}
+
+      {revealedCode ? (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
+          <p className="font-medium text-amber-950">Local dev mode</p>
+          <p className="mt-1 text-amber-900/80">
+            Email isn&apos;t sending on localhost, so your code is shown here and
+            pre-filled. Your code:{" "}
+            <strong className="font-mono tracking-widest text-amber-950">
+              {revealedCode}
+            </strong>
+          </p>
+          <p className="mt-1 text-xs text-amber-900/70">
+            On the live site this never appears — codes go to email only.
+          </p>
+        </div>
       ) : null}
 
       <label className="block">

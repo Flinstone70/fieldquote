@@ -9,8 +9,12 @@ import {
   formatQuoteRef,
   quoteTotalPence,
 } from "@/lib/format";
-import { createQuote, listQuotes } from "@/lib/quotes-store";
-import { hasActiveSubscription } from "@/lib/subscription";
+import {
+  countQuotesThisMonth,
+  createQuote,
+  listQuotes,
+} from "@/lib/quotes-store";
+import { hasActiveSubscription, monthlyQuoteLimit } from "@/lib/subscription";
 import { validateWorkEmail } from "@/lib/auth/password";
 import type { CreateQuoteInput } from "@/lib/types";
 
@@ -42,6 +46,20 @@ export async function POST(request: Request) {
         },
         { status: 402 },
       );
+    }
+
+    const limit = monthlyQuoteLimit(user);
+    if (Number.isFinite(limit)) {
+      const used = await countQuotesThisMonth(user.id);
+      if (used >= limit) {
+        return NextResponse.json(
+          {
+            error: `You've reached your Professional limit of ${limit} quotes this month. Upgrade to Business for unlimited quotes.`,
+            limitReached: true,
+          },
+          { status: 402 },
+        );
+      }
     }
 
     const body = (await request.json()) as CreateQuoteBody;

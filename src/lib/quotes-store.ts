@@ -70,6 +70,31 @@ export async function listQuotes(userId: string): Promise<Quote[]> {
     );
 }
 
+/** Number of quotes the user created in the current calendar month (UTC). */
+export async function countQuotesThisMonth(userId: string): Promise<number> {
+  const now = new Date();
+  const monthStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+  ).toISOString();
+
+  if (useDatabase()) {
+    await ensureSchema();
+    const sql = getSql();
+    const rows = await sql`
+      SELECT COUNT(*)::int AS count FROM quotes
+      WHERE user_id = ${userId} AND created_at >= ${monthStart}
+    `;
+    return Number((rows[0] as { count: number } | undefined)?.count ?? 0);
+  }
+
+  const quotes = await ensureStoreJson();
+  return quotes.filter(
+    (quote) =>
+      quote.userId === userId &&
+      new Date(quote.createdAt).getTime() >= new Date(monthStart).getTime(),
+  ).length;
+}
+
 export async function getQuote(id: string): Promise<Quote | null> {
   const quoteId = id.trim();
   if (!quoteId) return null;

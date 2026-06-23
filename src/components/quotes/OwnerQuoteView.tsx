@@ -1,4 +1,4 @@
-import { DashboardBackLink } from "@/components/dashboard/DashboardBackLink";
+import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
 import { QuoteDocument } from "@/components/quotes/QuoteDocument";
 import { QuoteStatusTimeline } from "@/components/quotes/QuoteStatusTimeline";
 import { SendQuotePanel } from "@/components/quotes/SendQuotePanel";
@@ -36,19 +36,15 @@ export function OwnerQuoteView({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <DashboardBackLink />
-          <p className={`${ui.sectionLabel} block`}>Quote management</p>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            {quote.jobTitle}
-          </h1>
-          <p className="mt-2 text-sm text-neutral-500">
-            {formatQuoteRef(quote.id)} · Client: {quote.clientName}
-          </p>
-        </div>
-        <QuoteStatusBadge status={quote.status} />
-      </div>
+      <DashboardPageHeader
+        crumbs={[
+          { label: "Overview", href: "/dashboard" },
+          { label: "Manage quote" },
+        ]}
+        title={quote.jobTitle}
+        description={`${formatQuoteRef(quote.id)} · Client: ${quote.clientName}`}
+        badge={<QuoteStatusBadge status={quote.status} />}
+      />
 
       <QuoteStatusTimeline status={quote.status} />
 

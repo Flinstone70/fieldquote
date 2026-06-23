@@ -1,4 +1,4 @@
-import { DashboardBackLink } from "@/components/dashboard/DashboardBackLink";
+import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
 import { SubscribeButton } from "@/components/billing/SubscribeButton";
 import { requireSession } from "@/lib/auth/guards";
 import { hasActiveSubscription, subscriptionLabel } from "@/lib/subscription";
@@ -19,17 +19,14 @@ export default async function BillingPage({
 
   return (
     <>
-      <div className="mb-8">
-        <DashboardBackLink />
-        <p className={`${ui.sectionLabel} block`}>Billing</p>
-        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Company subscription
-        </h2>
-        <p className="mt-2 max-w-2xl text-neutral-500 leading-relaxed">
-          PayPal collects your monthly fee in GBP. Subscribe to keep creating and
-          sending client quotes after your trial.
-        </p>
-      </div>
+      <DashboardPageHeader
+        crumbs={[
+          { label: "Overview", href: "/dashboard" },
+          { label: "Billing" },
+        ]}
+        title="Company subscription"
+        description="PayPal collects your monthly fee in GBP. Subscribe to keep creating and sending client quotes after your trial."
+      />
 
       {reason === "subscription_required" && !active ? (
         <div className="mb-8 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4">

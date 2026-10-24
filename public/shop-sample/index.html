@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en-SG">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      Shop page you can sell.
+
+      Before you send this to a paying customer, change:
+      1. Business name (CoolAir SG)
+      2. Area (Tampines and the east)
+      3. Phone and WhatsApp (9000 1111 / 6590001111)
+      4. The three prices
+      5. body data-sample="true" -> data-sample="false"  (hides the yellow bar)
+
+      Deposit first: S$150 PayNow. Start only after it arrives.
+      Balance: S$250 when you send the live link.
+    -->
+    <title>CoolAir SG — Aircon servicing in Tampines</title>
+    <meta
+      name="description"
+      content="Sample one-page site for a Singapore aircon business. General service, chemical wash, and gas top-up, booked on WhatsApp."
+    />
+    <meta property="og:title" content="CoolAir SG — Aircon servicing" />
+    <meta
+      property="og:description"
+      content="Price first. Book on WhatsApp. A one-page sample for a small Singapore business."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #0a0a0a;
+        --muted: #737373;
+        --line: #e5e5e5;
+        --soft: #fafafa;
+        --amber: #d97706;
+        --amber-deep: #92400e;
+        --wash: #fff7ed;
+        --max: 1040px;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        background: #fff;
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body[data-sample="false"] .sample-bar { display: none; }
+
+      a { color: inherit; }
+
+      :focus-visible {
+        outline: 2px solid var(--ink);
+        outline-offset: 3px;
+      }
+
+      .sample-bar {
+        background: #fef3c7;
+        color: var(--amber-deep);
+        text-align: center;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 10px 16px;
+      }
+
+      .wrap {
+        width: min(var(--max), calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid transparent;
+      }
+
+      header.scrolled { border-bottom-color: var(--line); }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 72px;
+        gap: 16px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+
+      .mark {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        background: var(--ink);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        flex: none;
+      }
+
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .brand-text strong {
+        font-size: 15px;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+
+      .brand-text small {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .hero {
+        background:
+          radial-gradient(circle at 85% 0%, rgba(217, 119, 6, 0.1), transparent 36%),
+          linear-gradient(180deg, var(--wash) 0%, #fff 58%);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .hero-grid {
+        display: grid;
+        gap: 36px;
+        padding: 64px 0 72px;
+      }
+
+      .kicker {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(40px, 6vw, 64px);
+        line-height: 1.02;
+        letter-spacing: -0.045em;
+        font-weight: 600;
+      }
+
+      h1 em {
+        font-style: normal;
+        color: #a3a3a3;
+      }
+
+      .lede {
+        margin: 20px 0 0;
+        max-width: 460px;
+        color: #525252;
+        font-size: 18px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 28px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 22px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .btn-dark { background: var(--ink); color: #fff; }
+      .btn-dark:hover { background: #262626; }
+
+      .btn-light {
+        background: #fff;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+
+      .btn-light:hover { border-color: var(--ink); }
+
+      .btn-light-on-dark {
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .fine {
+        margin: 14px 0 0;
+        color: #a3a3a3;
+        font-size: 13px;
+      }
+
+      .price-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 20px 50px rgba(10, 10, 10, 0.05);
+      }
+
+      .price-card p { margin: 0; }
+
+      .price-card .label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .price-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 56px;
+        letter-spacing: -0.05em;
+        line-height: 1;
+      }
+
+      .price-card .per {
+        margin-top: 8px;
+        color: #525252;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+      }
+
+      .split span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .split b {
+        display: block;
+        margin-top: 4px;
+        font-size: 14px;
+      }
+
+      section { padding: 72px 0; }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 40px);
+        letter-spacing: -0.04em;
+        line-height: 1.1;
+        font-weight: 600;
+      }
+
+      .sub {
+        margin: 12px 0 0;
+        color: var(--muted);
+        max-width: 460px;
+      }
+
+      .cards {
+        display: grid;
+        gap: 14px;
+        margin-top: 32px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 22px;
+        background: #fff;
+      }
+
+      .card .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: baseline;
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+      }
+
+      .card .amt {
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        white-space: nowrap;
+      }
+
+      .card p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .steps {
+        display: grid;
+        gap: 14px;
+        margin-top: 32px;
+      }
+
+      .step {
+        padding: 22px;
+        border-radius: 20px;
+        background: var(--soft);
+      }
+
+      .step em {
+        font-style: normal;
+        color: #a3a3a3;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+      }
+
+      .step h3 {
+        margin: 10px 0 0;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+      }
+
+      .step p {
+        margin: 8px 0 0;
+        color: #525252;
+        font-size: 14px;
+      }
+
+      .book {
+        background: var(--ink);
+        color: #fff;
+        border-radius: 28px;
+        padding: 32px 24px;
+      }
+
+      .book .kicker { color: #fbbf24; }
+
+      .book h2 { max-width: 520px; }
+
+      .book .sub { color: #a3a3a3; }
+
+      .book .actions { margin-top: 24px; }
+
+      .meta {
+        display: grid;
+        gap: 14px;
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid #262626;
+      }
+
+      .meta span {
+        display: block;
+        color: #a3a3a3;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .meta b { display: block; margin-top: 4px; font-weight: 500; }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 28px 0 42px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .dock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 20;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+        background: rgba(255, 255, 255, 0.96);
+        border-top: 1px solid var(--line);
+      }
+
+      .dock .btn { width: 100%; }
+
+      .nav .nav-cta { display: none; }
+
+      @media (min-width: 800px) {
+        .nav .nav-cta { display: inline-flex; }
+        .hero-grid {
+          grid-template-columns: 1.15fr 0.85fr;
+          align-items: center;
+          padding: 88px 0 96px;
+        }
+        .cards, .steps { grid-template-columns: repeat(3, 1fr); }
+        .book {
+          display: grid;
+          grid-template-columns: 1.2fr 0.8fr;
+          gap: 32px;
+          align-items: end;
+          padding: 48px;
+        }
+        .book .meta { margin-top: 0; padding-top: 0; border-top: 0; }
+        .dock { display: none; }
+      }
+
+      @media (max-width: 799px) {
+        body { padding-bottom: 84px; }
+      }
+    </style>
+  </head>
+  <body data-sample="true">
+    <div class="sample-bar">
+      Sample layout. Not a real shop. The name, prices, and phone number are examples.
+    </div>
+
+    <header id="top">
+      <div class="wrap nav">
+        <a class="brand" href="#top">
+          <span class="mark">CA</span>
+          <span class="brand-text">
+            <strong>CoolAir SG</strong>
+            <small>Tampines · Aircon</small>
+          </span>
+        </a>
+        <a class="btn btn-dark nav-cta" id="nav-wa" href="https://wa.me/6590001111?text=Hi%20CoolAir%20SG%2C%20I%20would%20like%20to%20book%20a%20service.">WhatsApp to book</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <p class="kicker">Aircon servicing</p>
+            <h1>Price first. <em>Then we come over.</em></h1>
+            <p class="lede">
+              General service, chemical wash, and gas top-up for homes in Tampines and the east. You get the price on WhatsApp before anyone is at your door.
+            </p>
+            <div class="actions">
+              <a class="btn btn-dark" id="hero-wa" href="https://wa.me/6590001111?text=Hi%20CoolAir%20SG%2C%20I%20would%20like%20to%20book%20a%20service.">Book on WhatsApp</a>
+              <a class="btn btn-light" href="#prices">See prices</a>
+            </div>
+            <p class="fine">Daily, 9am–7pm · Wall units · Price confirmed before the job</p>
+          </div>
+
+          <aside class="price-card">
+            <p class="label">General service from</p>
+            <strong>S$45</strong>
+            <p class="per">per wall unit, before GST if it applies</p>
+            <div class="split">
+              <p><span>Chemical wash</span><b>S$90</b></p>
+              <p><span>Gas top-up</span><b>from S$70</b></p>
+              <p><span>Reply</span><b>Same day</b></p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="prices">
+        <div class="wrap">
+          <p class="kicker">Prices</p>
+          <h2>What a normal home unit costs</h2>
+          <p class="sub">Ceiling cassettes and system faults cost more. Ask before you book and we will say so.</p>
+          <div class="cards">
+            <article class="card">
+              <div class="row">
+                <h3>General service</h3>
+                <span class="amt">S$45</span>
+              </div>
+              <p>Filter wash, cover clean, and a check that the unit is cooling. One wall unit.</p>
+            </article>
+            <article class="card">
+              <div class="row">
+                <h3>Chemical wash</h3>
+                <span class="amt">S$90</span>
+              </div>
+              <p>For weak cooling, dripping, or a smell. Coil clean on one wall unit.</p>
+            </article>
+            <article class="card">
+              <div class="row">
+                <h3>Gas top-up</h3>
+                <span class="amt">from S$70</span>
+              </div>
+              <p>Only after a leak check. We tell you the price before any gas goes in.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding-top: 0">
+        <div class="wrap">
+          <p class="kicker">How booking works</p>
+          <h2>Three messages. Then a time.</h2>
+          <div class="steps">
+            <article class="step">
+              <em>01</em>
+              <h3>Send your block and unit</h3>
+              <p>WhatsApp the estate, how many units, and what is wrong. A photo of the unit helps.</p>
+            </article>
+            <article class="step">
+              <em>02</em>
+              <h3>Get the price</h3>
+              <p>You get a price for that visit before anyone comes over. No surprise add-on at the door.</p>
+            </article>
+            <article class="step">
+              <em>03</em>
+              <h3>Pick a slot</h3>
+              <p>Daily between 9am and 7pm across Tampines, Pasir Ris, Bedok, and Simei.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding-top: 0">
+        <div class="wrap">
+          <div class="book" id="book">
+            <div>
+              <p class="kicker">Book</p>
+              <h2>Message CoolAir SG on WhatsApp</h2>
+              <p class="sub">Tell us how many units and what you need. We reply with a price and a time.</p>
+              <div class="actions">
+                <a class="btn btn-light-on-dark" id="book-wa" href="https://wa.me/6590001111?text=Hi%20CoolAir%20SG%2C%20I%20would%20like%20to%20book%20a%20service.">WhatsApp 9000 1111</a>
+                <a class="btn btn-light" id="book-call" href="tel:+6590001111" style="background: transparent; color: #fff; border-color: #404040;">Call</a>
+              </div>
+            </div>
+            <div class="meta">
+              <p><span>Hours</span><b>Daily, 9am–7pm</b></p>
+              <p><span>Area</span><b>Tampines, Pasir Ris, Bedok, Simei</b></p>
+              <p>
+                <span>Map</span>
+                <b><a href="https://www.google.com/maps/search/?api=1&amp;query=Tampines%20Singapore">Tampines, Singapore</a></b>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap foot">
+        <span>CoolAir SG · Sample page</span>
+        <span>Change the details, then hide this sample label.</span>
+      </div>
+    </footer>
+
+    <div class="dock">
+      <a class="btn btn-light" href="tel:+6590001111">Call</a>
+      <a class="btn btn-dark" href="https://wa.me/6590001111?text=Hi%20CoolAir%20SG%2C%20I%20would%20like%20to%20book%20a%20service.">WhatsApp</a>
+    </div>
+
+    <script>
+      const header = document.querySelector("header");
+      const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 4);
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+    </script>
+  </body>
+</html>
